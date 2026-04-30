@@ -1,0 +1,30 @@
+{
+  "name": "@sergeigarin/hygene",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "README.md",
+    "tsconfig.json",
+    "oxfmt.json",
+    "oxlint.config.mjs"
+  ],
+  "exports": {
+    ".": "./oxlint.config.mjs",
+    "./tsconfig.json": "./tsconfig.json",
+    "./oxfmt.json": "./oxfmt.json",
+    "./oxlint.config.mjs": "./oxlint.config.mjs"
+  },
+  "scripts": {
+    "validate": "node --input-type=module -e \"import fs from 'node:fs'; await import('./oxlint.config.mjs'); JSON.parse(fs.readFileSync('tsconfig.json', 'utf8')); JSON.parse(fs.readFileSync('oxfmt.json', 'utf8'));\" && npm pack --dry-run"
+  },
+  "dependencies": {
+    "@nkzw/eslint-plugin": "^2.0.0",
+    "eslint-plugin-no-only-tests": "^3.3.0",
+    "eslint-plugin-perfectionist": "^5.9.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-unused-imports": "~4.4.1"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.46.0"
+  }
+}
