@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      npm_config_cache: .npm-cache
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Restore npm cache
+        uses: actions/cache@v4
+        with:
+          path: .npm-cache
+          key: ${{ runner.os }}-npm-${{ hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
+
+      - name: Validate package
+        run: npm run validate

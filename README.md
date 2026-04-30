@@ -63,3 +63,18 @@ npm_config_cache=.npm-cache npm run validate
 ```
 
 Это только smoke-check: импорт конфига, парсинг JSON-файлов и `npm pack --dry-run`.
+
+## Release flow
+
+Локально:
+
+```sh
+npm run changeset
+npm run version-packages
+npm run release
+```
+
+На GitHub:
+- `CI` workflow гоняет базовую валидацию на `push` и `pull_request`
+- `Release` workflow через Changesets создаёт/обновляет release PR на `master`
+- после merge release PR workflow публикует пакет в npm

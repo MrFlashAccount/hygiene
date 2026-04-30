@@ -2,6 +2,9 @@
   "name": "@sergeigarin/hygene",
   "version": "0.0.0",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "README.md",
     "tsconfig.json",
@@ -15,7 +18,10 @@
     "./oxlint.config.mjs": "./oxlint.config.mjs"
   },
   "scripts": {
-    "validate": "node --input-type=module -e \"import fs from 'node:fs'; await import('./oxlint.config.mjs'); JSON.parse(fs.readFileSync('tsconfig.json', 'utf8')); JSON.parse(fs.readFileSync('oxfmt.json', 'utf8'));\" && npm pack --dry-run"
+    "changeset": "changeset",
+    "release": "changeset publish",
+    "validate": "node --input-type=module -e \"import fs from 'node:fs'; await import('./oxlint.config.mjs'); JSON.parse(fs.readFileSync('tsconfig.json', 'utf8')); JSON.parse(fs.readFileSync('oxfmt.json', 'utf8'));\" && npm pack --dry-run --cache .npm-cache",
+    "version-packages": "changeset version"
   },
   "dependencies": {
     "@nkzw/eslint-plugin": "^2.0.0",
@@ -23,6 +29,9 @@
     "eslint-plugin-perfectionist": "^5.9.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-unused-imports": "~4.4.1"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7"
   },
   "peerDependencies": {
     "oxlint": ">=1.46.0"
