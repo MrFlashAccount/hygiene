@@ -2,6 +2,7 @@
   "name": "@sergeigarin/hygene",
   "version": "0.0.0",
   "type": "module",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
