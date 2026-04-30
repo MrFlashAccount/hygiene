@@ -1,24 +1,47 @@
 # @sergeigarin/hygene
 
-Один пакет с базовыми фронтенд hygiene-настройками, вынесенными из launcher.
+Shared frontend hygiene defaults for React + Vite projects.
 
-Внутри только root-файлы:
-- `package.json`
-- `README.md`
-- `.gitignore`
-- `tsconfig.json`
-- `oxfmt.json`
-- `oxlint.config.mjs`
+`@sergeigarin/hygene` gives you one reusable baseline for TypeScript, oxlint, and oxfmt, so you can stop rebuilding the same config stack every time you start a new app.
 
-## Что экспортируется
+It is intentionally narrow:
 
-- `@sergeigarin/hygene` → общий `oxlint` config
-- `@sergeigarin/hygene/tsconfig.json` → общий TypeScript baseline
-- `@sergeigarin/hygene/oxfmt.json` → общий oxfmt baseline
+- built for React + Vite codebases
+- centered on TypeScript, oxlint, and oxfmt
+- shared where consistency helps
+- local where project reality still matters
 
-## Usage
+What is React/Vite-specific here is mostly the default TypeScript shape and the expected consumer setup. The lint rules are broader, but the package is still tuned for modern React app repos rather than generic JavaScript projects.
 
-TypeScript:
+That local-vs-shared split is the point: the package gives you the baseline, while each app keeps its own ignores, test setup, generated files, and build-tool wiring.
+
+## Best for
+
+- teams or solo builders with multiple React + Vite apps
+- projects that want one lint/type/format baseline across repos
+- codebases that want shared standards without hiding all config behind a giant internal platform package
+
+## Not for
+
+- non-React or non-Vite stacks
+- repos that want fully centralized app policy with no local overrides
+- projects looking for a broad framework-agnostic frontend toolkit
+
+## What you get
+
+- `@sergeigarin/hygene` → shared `oxlint` config
+- `@sergeigarin/hygene/tsconfig.json` → shared TypeScript baseline
+- `@sergeigarin/hygene/oxfmt.json` → intentionally minimal oxfmt baseline
+
+## Quick start
+
+Install the package and the tools you actually run in the consumer app:
+
+```sh
+npm install -D @sergeigarin/hygene oxlint oxfmt
+```
+
+### TypeScript
 
 ```json
 {
@@ -27,9 +50,9 @@ TypeScript:
 }
 ```
 
-`include`, `types`, test/e2e coverage и прочие tool-specific куски держи локально в consumer-проекте.
+Keep `include`, `types`, test coverage, e2e files, and tool-specific wiring local to the consumer project.
 
-Oxlint:
+### Oxlint
 
 ```js
 import base from "@sergeigarin/hygene";
@@ -43,18 +66,26 @@ export default {
 };
 ```
 
-`@nkzw/oxlint-config` сюда уже инлайнен. Внешнего extend/import на него больше нет.
+The shared config is fully inlined in this package, so consumers depend on one baseline package instead of extending another config layer downstream.
 
-Локально у consumer'а должны оставаться:
-- ignore patterns (`dist/**`, `coverage/**`, `storybook-static/**`, generated dirs, caches)
-- project-specific overrides
-- app/test/tool includes
-
-Oxfmt:
+### Oxfmt
 
 ```sh
 oxfmt --config ./node_modules/@sergeigarin/hygene/oxfmt.json --check .
 ```
+
+Right now the shared `oxfmt` surface is intentionally minimal. The value is having one stable config entrypoint across repos, while consumer-specific ignore files and formatter workflow stay local.
+
+## What should stay local
+
+This package is the baseline, not your whole frontend policy.
+
+Keep these in the consumer repo:
+
+- ignore patterns like `dist/**`, `coverage/**`, `storybook-static/**`, generated folders, and caches
+- app-specific lint overrides
+- test, e2e, and build-tool includes
+- anything tied to one runtime, folder layout, or framework slice
 
 ## Validation
 
@@ -62,11 +93,15 @@ oxfmt --config ./node_modules/@sergeigarin/hygene/oxfmt.json --check .
 npm_config_cache=.npm-cache npm run validate
 ```
 
-Это только smoke-check: импорт конфига, парсинг JSON-файлов и `npm pack --dry-run`.
+This runs a small smoke check:
+
+- imports the shared `oxlint` config
+- parses the exported JSON configs
+- verifies the package can be packed cleanly with `npm pack --dry-run`
 
 ## Release flow
 
-Локально:
+### Local
 
 ```sh
 npm run changeset
@@ -74,7 +109,8 @@ npm run version-packages
 npm run release
 ```
 
-На GitHub:
-- `CI` workflow гоняет базовую валидацию на `push` и `pull_request`
-- `Release` workflow через Changesets создаёт/обновляет release PR на `master`
-- после merge release PR workflow публикует пакет в npm
+### GitHub
+
+- `CI` validates the package on `push` and `pull_request`
+- `Release` uses Changesets to create or update the release PR on `master`
+- merging the release PR publishes the package to npm

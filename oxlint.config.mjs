@@ -39,25 +39,7 @@ export default {
         "prefer-rest-params": "error",
         "prefer-spread": "error",
       },
-    },
-    {
-      files: [
-        "server/scripts/**/*.tsx",
-        "server/src/app.tsx",
-        "server/src/index.tsx",
-        "server/src/prisma/seed.tsx",
-        "server/src/worker.tsx",
-      ],
-      rules: {
-        "no-console": "off",
-      },
-    },
-    {
-      files: ["server/**/*.tsx"],
-      rules: {
-        "react-hooks/rules-of-hooks": "off",
-      },
-    },
+    }
   ],
   plugins: ["typescript", "import", "react", "unicorn"],
   rules: {
