@@ -1,4 +1,4 @@
-# @sergeigarin/hygene
+# hygiene
 
 Shared frontend hygiene defaults for React + Vite projects.
 
