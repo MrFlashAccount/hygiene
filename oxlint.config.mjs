@@ -1,3 +1,9 @@
+import { RECOMMENDED_RULES } from "oxlint-plugin-react-doctor";
+
+const reactDoctorRules = Object.fromEntries(
+  Object.keys(RECOMMENDED_RULES).map((ruleName) => [ruleName, "error"])
+);
+
 export default {
   categories: {
     correctness: "off",
@@ -13,6 +19,7 @@ export default {
     "eslint-plugin-no-only-tests",
     "eslint-plugin-perfectionist",
     "eslint-plugin-unused-imports",
+    { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
     { name: "react-hooks-js", specifier: "eslint-plugin-react-hooks" },
   ],
   overrides: [
@@ -46,6 +53,7 @@ export default {
     "@nkzw/ensure-relay-types": "error",
     "@nkzw/no-instanceof": "error",
     "@nkzw/require-use-effect-arguments": "error",
+    ...reactDoctorRules,
     "@typescript-eslint/array-type": [
       "error",
       {
