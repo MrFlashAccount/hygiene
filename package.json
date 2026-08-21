@@ -1,41 +1,85 @@
 {
   "name": "@sergeigarin/hygene",
   "version": "0.0.0",
-  "type": "module",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "files": [
     "README.md",
+    "hygienePlugin.d.ts",
+    "hygienePlugin.mjs",
+    "oxlint.config.d.ts",
     "tsconfig.json",
+    "tsconfig.base.json",
+    "tsconfig.library.json",
+    "tsconfig.node.json",
     "oxfmt.json",
     "oxlint.config.mjs"
   ],
+  "type": "module",
+  "types": "./oxlint.config.d.ts",
   "exports": {
-    ".": "./oxlint.config.mjs",
+    ".": {
+      "types": "./oxlint.config.d.ts",
+      "default": "./oxlint.config.mjs"
+    },
+    "./hygienePlugin.mjs": {
+      "types": "./hygienePlugin.d.ts",
+      "default": "./hygienePlugin.mjs"
+    },
     "./tsconfig.json": "./tsconfig.json",
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.library.json": "./tsconfig.library.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
     "./oxfmt.json": "./oxfmt.json",
-    "./oxlint.config.mjs": "./oxlint.config.mjs"
+    "./oxlint.config.mjs": {
+      "types": "./oxlint.config.d.ts",
+      "default": "./oxlint.config.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "changeset": "changeset",
+    "format:check": "oxfmt --config oxfmt.json --check .",
+    "lint": "oxlint --config oxlint.config.mjs --tsconfig tsconfig.json --deny-warnings --report-unused-disable-directives oxlint.config.mjs hygienePlugin.mjs test/config.test.mjs test/package.test.mjs test/capabilityArchitecture.config.mjs test/noDirectEffects.config.mjs",
+    "lint:dead-code": "knip",
+    "lint:package": "publint && attw --pack . --profile esm-only",
     "release": "changeset publish",
-    "validate": "node --input-type=module -e \"import fs from 'node:fs'; await import('./oxlint.config.mjs'); JSON.parse(fs.readFileSync('tsconfig.json', 'utf8')); JSON.parse(fs.readFileSync('oxfmt.json', 'utf8'));\" && npm pack --dry-run --cache .npm-cache",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc -p test/tsconfig.json",
+    "validate": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run lint:dead-code && npm run lint:package",
     "version-packages": "changeset version"
   },
   "dependencies": {
-    "@nkzw/eslint-plugin": "^2.0.0",
-    "eslint-plugin-no-only-tests": "^3.3.0",
-    "eslint-plugin-perfectionist": "^5.9.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-unused-imports": "~4.4.1",
-    "oxlint-plugin-react-doctor": "^0.2.15"
+    "@nkzw/eslint-plugin": "2.0.0",
+    "eslint": "10.8.1",
+    "eslint-plugin-perfectionist": "5.9.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-unused-imports": "4.4.1",
+    "oxlint-plugin-react-doctor": "0.9.12"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.7"
+    "@arethetypeswrong/cli": "0.18.5",
+    "@changesets/cli": "2.31.0",
+    "knip": "6.32.2",
+    "oxfmt": "0.64.0",
+    "oxlint": "1.79.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "publint": "0.3.24",
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
-    "oxlint": ">=1.46.0"
+    "@types/node": ">=22.0.0",
+    "oxlint": ">=1.79.0",
+    "oxlint-tsgolint": ">=7.0.2001",
+    "typescript": ">=5.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
   }
 }

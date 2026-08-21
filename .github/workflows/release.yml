@@ -17,35 +17,31 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
-      npm_config_cache: .npm-cache
       NPM_CONFIG_PROVENANCE: true
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: lts/*
+          cache: npm
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
-      - name: Restore npm cache
-        uses: actions/cache@v4
-        with:
-          path: .npm-cache
-          key: ${{ runner.os }}-npm-${{ hashFiles('package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
       - name: Install dependencies
-        run: npm install --no-fund --no-audit
+        run: npm ci --no-fund --no-audit
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
 
       - name: Validate package
         run: npm run validate
 
       - name: Create release pull request or publish to npm
-        uses: changesets/action@v1
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           version: npm run version-packages
           publish: npm run release
