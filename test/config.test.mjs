@@ -14,6 +14,7 @@ const ROOT = path.dirname(fileURLToPath(new URL("../package.json", import.meta.u
 const OXLINT = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const TSC = path.join(ROOT, "node_modules", ".bin", "tsc");
 const DIRECT_EFFECT_DIAGNOSTIC_COUNT = 3;
+const AMBIENT_CAPABILITY_DIAGNOSTIC_COUNT = 5;
 const TSCONFIGS = [
   "tsconfig.base.json",
   "tsconfig.json",
@@ -82,7 +83,7 @@ test("ordinary type assertions require a local justification", () => {
   assert.match(outputOf(result), /hygiene\(require-type-assertion-justification\)/u);
 });
 
-test("the opt-in preset rejects direct React effect hooks", () => {
+test("the opt-in preset rejects direct React effect hooks but ignores shadowed names", () => {
   const result = runOxlint(
     "--config",
     "test/noDirectEffects.config.mjs",
@@ -100,6 +101,21 @@ test("the opt-in preset rejects direct React effect hooks", () => {
   );
 });
 
+test("the opt-in preset resolves React imports regardless of source order", () => {
+  const result = runOxlint(
+    "--config",
+    "test/noDirectEffects.config.mjs",
+    "--tsconfig",
+    "tsconfig.json",
+    "--format",
+    "json",
+    "test/fixtures/invalidLateUseEffect.tsx",
+  );
+
+  assert.notEqual(result.status, 0, outputOf(result));
+  assert.equal(outputOf(result).match(/hygiene\(no-direct-effects\)/gu)?.length, 1);
+});
+
 test("capability boundaries reject direct effects and ambient UI capabilities", () => {
   const result = runOxlint(
     "--config",
@@ -114,8 +130,25 @@ test("capability boundaries reject direct effects and ambient UI capabilities", 
 
   assert.notEqual(result.status, 0, output);
   assert.match(output, /hygiene\(no-direct-effects\)/u);
-  assert.match(output, /eslint\(no-restricted-globals\)/u);
+  assert.equal(
+    output.match(/hygiene\(no-ambient-capabilities\)/gu)?.length,
+    AMBIENT_CAPABILITY_DIAGNOSTIC_COUNT,
+  );
   assert.match(output, /eslint\(no-restricted-properties\)/u);
+});
+
+test("capability boundaries ignore shadowed global-object names", () => {
+  const result = runOxlint(
+    "--config",
+    "test/capabilityArchitecture.config.mjs",
+    "--tsconfig",
+    "tsconfig.json",
+    "--format",
+    "json",
+    "test/fixtures/validShadowedCapabilities.ts",
+  );
+
+  assert.doesNotMatch(outputOf(result), /hygiene\(no-ambient-capabilities\)/u);
 });
 
 test("capability boundaries keep React out of the domain layer", () => {

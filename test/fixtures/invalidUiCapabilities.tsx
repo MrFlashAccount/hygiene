@@ -6,6 +6,9 @@ export const InvalidUiCapabilities = () => {
   }, []);
 
   fetch("/api/data");
+  window.fetch("/api/window-data");
+  globalThis.localStorage.getItem("session");
+  new self.WebSocket("wss://example.test");
 
   return <div>{Math.random()}</div>;
 };

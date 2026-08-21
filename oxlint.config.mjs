@@ -57,29 +57,6 @@ const DEFAULT_DOMAIN_IMPORT_PATTERNS = [
   "**/infrastructure/**",
 ];
 const DEFAULT_UI_IMPORT_PATTERNS = ["**/infrastructure/**", "**/server/**"];
-const UI_RESTRICTED_GLOBALS = [
-  { message: "Inject an HTTP capability instead of calling fetch from UI code.", name: "fetch" },
-  {
-    message: "Inject a storage capability instead of reading IndexedDB from UI code.",
-    name: "indexedDB",
-  },
-  {
-    message: "Inject a storage capability instead of reading localStorage from UI code.",
-    name: "localStorage",
-  },
-  {
-    message: "Inject a storage capability instead of reading sessionStorage from UI code.",
-    name: "sessionStorage",
-  },
-  {
-    message: "Inject a transport capability instead of opening EventSource from UI code.",
-    name: "EventSource",
-  },
-  {
-    message: "Inject a transport capability instead of opening WebSocket from UI code.",
-    name: "WebSocket",
-  },
-];
 const UI_RESTRICTED_PROPERTIES = [
   {
     message: "Inject a clock capability instead of reading wall-clock time from UI code.",
@@ -637,7 +614,7 @@ const createCapabilityOverrides = ({
     overrides.push({
       files: uiFiles,
       rules: {
-        "no-restricted-globals": ["error", ...UI_RESTRICTED_GLOBALS],
+        "hygiene/no-ambient-capabilities": "error",
         "no-restricted-imports": ["error", createUiRestrictedImports(uiForbiddenImportPatterns)],
         "no-restricted-properties": ["error", ...UI_RESTRICTED_PROPERTIES],
       },

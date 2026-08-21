@@ -6,3 +6,8 @@ export function Synchronizer(): null {
   React["useInsertionEffect"](() => undefined, []);
   return null;
 }
+
+export function useLocalEffects(React: { useEffect(): void }, synchronize: () => void): void {
+  React.useEffect();
+  synchronize();
+}

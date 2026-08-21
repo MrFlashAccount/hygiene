@@ -4,6 +4,15 @@ const ALLOWED_UNSAFE_DIRECTIVES = new Set([
 ]);
 const PREVIOUS_COMMENT_INDEX = -2;
 const EFFECT_HOOKS = new Set(["useEffect", "useInsertionEffect", "useLayoutEffect"]);
+const AMBIENT_CAPABILITIES = new Map([
+  ["EventSource", "Inject a transport capability instead of opening EventSource from UI code."],
+  ["WebSocket", "Inject a transport capability instead of opening WebSocket from UI code."],
+  ["fetch", "Inject an HTTP capability instead of calling fetch from UI code."],
+  ["indexedDB", "Inject a storage capability instead of reading IndexedDB from UI code."],
+  ["localStorage", "Inject a storage capability instead of reading localStorage from UI code."],
+  ["sessionStorage", "Inject a storage capability instead of reading sessionStorage from UI code."],
+]);
+const GLOBAL_OBJECTS = new Set(["globalThis", "self", "window"]);
 const STATEMENT_BOUNDARIES = new Set(["BlockStatement", "Program", "StaticBlock", "SwitchCase"]);
 
 const isTypeAssertion = (node) => node.type === "TSAsExpression" || node.type === "TSTypeAssertion";
@@ -139,46 +148,115 @@ const getImportedName = (specifier) => {
   return typeof specifier.imported.value === "string" ? specifier.imported.value : undefined;
 };
 
-const noDirectEffects = {
+const findVariable = (sourceCode, identifier) => {
+  let scope = sourceCode.getScope(identifier);
+
+  while (scope) {
+    const variable = scope.set.get(identifier.name);
+    if (variable) {
+      return variable;
+    }
+
+    scope = scope.upper;
+  }
+
+  return undefined;
+};
+
+const findReactImportSpecifier = (sourceCode, identifier) => {
+  const variable = findVariable(sourceCode, identifier);
+  const importDefinition = variable?.defs.find(
+    (definition) =>
+      definition.type === "ImportBinding" &&
+      definition.parent?.type === "ImportDeclaration" &&
+      definition.parent.source.value === "react",
+  );
+
+  return importDefinition?.node;
+};
+
+const getDirectReactEffect = (sourceCode, identifier) => {
+  const specifier = findReactImportSpecifier(sourceCode, identifier);
+  if (specifier?.type !== "ImportSpecifier") {
+    return undefined;
+  }
+
+  const importedName = getImportedName(specifier);
+  return importedName && EFFECT_HOOKS.has(importedName) ? importedName : undefined;
+};
+
+const getQualifiedReactEffect = (sourceCode, memberExpression) => {
+  if (memberExpression.object.type !== "Identifier") {
+    return undefined;
+  }
+
+  const specifier = findReactImportSpecifier(sourceCode, memberExpression.object);
+  if (!specifier || specifier.type === "ImportSpecifier") {
+    return undefined;
+  }
+
+  const propertyName = getPropertyName(memberExpression);
+  return propertyName && EFFECT_HOOKS.has(propertyName) ? propertyName : undefined;
+};
+
+const getReactEffect = (sourceCode, callee) => {
+  if (callee.type === "Identifier") {
+    return getDirectReactEffect(sourceCode, callee);
+  }
+
+  return callee.type === "MemberExpression"
+    ? getQualifiedReactEffect(sourceCode, callee)
+    : undefined;
+};
+
+const noAmbientCapabilities = {
   create(context) {
-    const directBindings = new Map();
-    const reactNamespaces = new Set();
+    const reportCapability = (node, capability) => {
+      context.report({
+        data: { capability, replacement: AMBIENT_CAPABILITIES.get(capability) },
+        messageId: "ambientCapability",
+        node,
+      });
+    };
 
     return {
-      CallExpression(node) {
-        let hook;
-
-        if (node.callee.type === "Identifier") {
-          hook = directBindings.get(node.callee.name);
-        } else if (
-          node.callee.type === "MemberExpression" &&
-          node.callee.object.type === "Identifier" &&
-          reactNamespaces.has(node.callee.object.name)
-        ) {
-          const propertyName = getPropertyName(node.callee);
-          if (propertyName && EFFECT_HOOKS.has(propertyName)) {
-            hook = propertyName;
-          }
+      Identifier(node) {
+        if (AMBIENT_CAPABILITIES.has(node.name) && context.sourceCode.isGlobalReference(node)) {
+          reportCapability(node, node.name);
         }
+      },
+      MemberExpression(node) {
+        const capability = getPropertyName(node);
+
+        if (
+          capability &&
+          AMBIENT_CAPABILITIES.has(capability) &&
+          node.object.type === "Identifier" &&
+          GLOBAL_OBJECTS.has(node.object.name) &&
+          context.sourceCode.isGlobalReference(node.object)
+        ) {
+          reportCapability(node, capability);
+        }
+      },
+    };
+  },
+  meta: {
+    messages: {
+      ambientCapability: "Direct {{capability}} access is forbidden in UI code. {{replacement}}",
+    },
+    schema: [],
+    type: "problem",
+  },
+};
+
+const noDirectEffects = {
+  create(context) {
+    return {
+      CallExpression(node) {
+        const hook = getReactEffect(context.sourceCode, node.callee);
 
         if (hook) {
           context.report({ data: { hook }, messageId: "directEffect", node });
-        }
-      },
-      ImportDeclaration(node) {
-        if (node.source.value !== "react") {
-          return;
-        }
-
-        for (const specifier of node.specifiers) {
-          if (specifier.type === "ImportSpecifier") {
-            const importedName = getImportedName(specifier);
-            if (importedName && EFFECT_HOOKS.has(importedName)) {
-              directBindings.set(specifier.local.name, importedName);
-            }
-          } else {
-            reactNamespaces.add(specifier.local.name);
-          }
         }
       },
     };
@@ -198,6 +276,7 @@ export default {
     name: "hygiene",
   },
   rules: {
+    "no-ambient-capabilities": noAmbientCapabilities,
     "no-direct-effects": noDirectEffects,
     "require-type-assertion-justification": requireTypeAssertionJustification,
   },
