@@ -12,7 +12,8 @@
     "tsconfig.library.json",
     "tsconfig.node.json",
     "oxfmt.json",
-    "oxlint.config.mjs"
+    "oxlint.config.mjs",
+    "templates/AGENTS.md"
   ],
   "type": "module",
   "types": "./oxlint.config.d.ts",

@@ -155,6 +155,18 @@ oxfmt --config ./node_modules/@sergeigarin/hygene/oxfmt.json --check .
 
 Right now the shared `oxfmt` surface is intentionally minimal. The value is having one stable config entrypoint across repos, while consumer-specific ignore files and formatter workflow stay local.
 
+### Agent instructions
+
+The package includes a short, editable `AGENTS.md` template for coding agents. It documents the design rules that lint cannot fully enforce without copying app-specific architecture into the shared package.
+
+Copy it into a consumer repository:
+
+```sh
+cp node_modules/@sergeigarin/hygene/templates/AGENTS.md ./AGENTS.md
+```
+
+Replace `<project validation command>` with the repository's authoritative check. Keep the commented capability-architecture section only when the project enables `noDirectEffects`, `capabilityArchitecture`, or equivalent custom boundaries. Add runtime, release, generated-file, and folder-layout rules locally rather than expanding the shared template.
+
 ## What should stay local
 
 This package is the baseline, not your whole frontend policy.
