@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -96,6 +96,21 @@ test(
       );
 
       assert.equal(importResult.status, 0, outputOf(importResult));
+
+      const agentTemplate = await readFile(
+        path.join(
+          temporaryDirectory,
+          "node_modules",
+          "@sergeigarin",
+          "hygene",
+          "templates",
+          "AGENTS.md",
+        ),
+        "utf8",
+      );
+
+      assert.match(agentTemplate, /^# Project agent instructions$/mu);
+      assert.match(agentTemplate, /^## Capability architecture$/mu);
 
       const lintResult = spawnSync(
         path.join(temporaryDirectory, "node_modules", ".bin", OXLINT),
