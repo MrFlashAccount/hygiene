@@ -54,7 +54,7 @@
   "dependencies": {
     "@nkzw/eslint-plugin": "2.0.0",
     "eslint": "10.8.1",
-    "eslint-plugin-perfectionist": "5.10.1",
+    "eslint-plugin-perfectionist": "5.11.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-unused-imports": "4.4.1",
     "oxlint-plugin-react-doctor": "0.9.12"
