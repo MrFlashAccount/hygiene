@@ -1,0 +1,101 @@
+{
+  "minimumVersion": "3.27.0",
+  "typeAware": {
+    "enabled": true,
+    "require": "complete"
+  },
+  "duplicates": {
+    "enabled": true,
+    "mode": "semantic",
+    "near": false,
+    "minTokens": 80,
+    "minLines": 8,
+    "minOccurrences": 2,
+    "threshold": 0,
+    "ignoreDefaults": true,
+    "skipLocal": false,
+    "crossLanguage": false,
+    "ignoreImports": true
+  },
+  "health": {
+    "maxCyclomatic": 8,
+    "maxCognitive": 10,
+    "maxCrap": 80,
+    "crapRefactorBand": 3,
+    "maxUnitSize": 60,
+    "suggestInlineSuppression": false
+  },
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "error",
+    "unused-types": "error",
+    "private-type-leaks": "error",
+    "unused-dependencies": "error",
+    "unused-dev-dependencies": "error",
+    "unused-optional-dependencies": "error",
+    "unused-enum-members": "error",
+    "unused-class-members": "error",
+    "unused-store-members": "error",
+    "unprovided-injects": "error",
+    "unrendered-components": "error",
+    "unused-component-props": "error",
+    "unused-component-emits": "error",
+    "unused-component-inputs": "error",
+    "unused-component-outputs": "error",
+    "unused-svelte-events": "error",
+    "unused-server-actions": "error",
+    "unused-load-data-keys": "error",
+    "prop-drilling": "off",
+    "thin-wrapper": "off",
+    "duplicate-prop-shape": "off",
+    "css-token-drift": "error",
+    "css-duplicate-block": "error",
+    "css-selector-complexity": "error",
+    "css-dead-surface": "error",
+    "css-broken-reference": "error",
+    "unresolved-imports": "error",
+    "unlisted-dependencies": "error",
+    "duplicate-exports": "error",
+    "type-only-dependencies": "error",
+    "test-only-dependencies": "error",
+    "dev-dependencies-in-production": "error",
+    "circular-dependencies": "error",
+    "re-export-cycle": "error",
+    "boundary-violation": "error",
+    "coverage-gaps": "off",
+    "feature-flags": "off",
+    "stale-suppressions": "error",
+    "require-suppression-reason": "error",
+    "unused-catalog-entries": "error",
+    "empty-catalog-groups": "error",
+    "unresolved-catalog-references": "error",
+    "unused-dependency-overrides": "error",
+    "misconfigured-dependency-overrides": "error",
+    "security-client-server-leak": "error",
+    "security-sink": "error",
+    "policy-violation": "off",
+    "invalid-client-export": "error",
+    "mixed-client-server-barrel": "error",
+    "misplaced-directive": "error",
+    "route-collision": "error",
+    "dynamic-segment-name-conflict": "error"
+  },
+  "boundaries": {
+    "zones": [
+      {
+        "name": "source",
+        "patterns": ["src/**"]
+      }
+    ],
+    "rules": [
+      {
+        "from": "source",
+        "allow": []
+      }
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": ["*.config.*", "src/**/*.d.ts"]
+    }
+  }
+}
