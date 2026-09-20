@@ -1,0 +1,150 @@
+{
+  "minimumVersion": "3.27.0",
+  "extends": ["./fallow.config.json"],
+  "boundaries": {
+    "zones": [
+      {
+        "name": "test",
+        "patterns": [
+          "src/**/*.test.*",
+          "src/**/*.spec.*",
+          "src/**/__tests__/**",
+          "test/**",
+          "tests/**"
+        ]
+      },
+      {
+        "name": "app",
+        "patterns": ["src/app/**", "src/pages/**", "src/App.*", "src/main.*"]
+      },
+      {
+        "name": "features",
+        "patterns": ["src/features/**"]
+      },
+      {
+        "name": "ui",
+        "patterns": ["src/components/**", "src/widgets/**"]
+      },
+      {
+        "name": "application",
+        "patterns": ["src/application/**", "src/use-cases/**"]
+      },
+      {
+        "name": "ports",
+        "patterns": ["src/ports/**"]
+      },
+      {
+        "name": "domain",
+        "patterns": ["src/domain/**", "src/entities/**"]
+      },
+      {
+        "name": "infrastructure",
+        "patterns": ["src/infrastructure/**", "src/platform/**", "src/server/**"]
+      },
+      {
+        "name": "shared",
+        "patterns": [
+          "src/shared/**",
+          "src/lib/**",
+          "src/utils/**",
+          "src/types/**",
+          "src/hooks/**",
+          "src/providers/**",
+          "src/styles/**",
+          "src/i18n/**"
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "from": "test",
+        "allow": [
+          "app",
+          "features",
+          "ui",
+          "application",
+          "ports",
+          "domain",
+          "infrastructure",
+          "shared"
+        ]
+      },
+      {
+        "from": "app",
+        "allow": ["features", "ui", "application", "ports", "domain", "infrastructure", "shared"]
+      },
+      {
+        "from": "features",
+        "allow": ["ui", "application", "ports", "domain", "shared"]
+      },
+      {
+        "from": "ui",
+        "allow": ["application", "ports", "domain", "shared"]
+      },
+      {
+        "from": "application",
+        "allow": ["ports", "domain", "shared"]
+      },
+      {
+        "from": "ports",
+        "allow": ["domain", "shared"]
+      },
+      {
+        "from": "domain",
+        "allow": ["shared"]
+      },
+      {
+        "from": "infrastructure",
+        "allow": ["application", "ports", "domain", "shared"]
+      },
+      {
+        "from": "shared",
+        "allow": []
+      }
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": ["src/**/*.d.ts"]
+    },
+    "calls": {
+      "forbidden": [
+        {
+          "from": "features",
+          "callee": [
+            "fetch",
+            "window.fetch",
+            "localStorage.*",
+            "sessionStorage.*",
+            "Date.now",
+            "Math.random",
+            "crypto.randomUUID"
+          ]
+        },
+        {
+          "from": "ui",
+          "callee": [
+            "fetch",
+            "window.fetch",
+            "localStorage.*",
+            "sessionStorage.*",
+            "Date.now",
+            "Math.random",
+            "crypto.randomUUID"
+          ]
+        },
+        {
+          "from": "domain",
+          "callee": [
+            "fetch",
+            "window.fetch",
+            "localStorage.*",
+            "sessionStorage.*",
+            "Date.now",
+            "Math.random",
+            "crypto.randomUUID"
+          ]
+        }
+      ]
+    }
+  }
+}
