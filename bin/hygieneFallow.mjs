@@ -4,6 +4,8 @@ import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import process from "node:process";
 
+import { resolveValidationCommand } from "./validationCommand.mjs";
+
 const DEFAULT_MINIMUM_SCORE = 85;
 const MAXIMUM_SCORE = 100;
 const EXIT_USAGE = 2;
@@ -27,7 +29,7 @@ const runFallow = (label, arguments_) => {
   process.stdout.write(`\n[hygiene] ${label}\n`);
 
   // fallow-ignore-next-line security-sink -- The executable is resolved from the pinned Fallow package and spawnSync does not invoke a shell.
-  const result = spawnSync(fallowBinary, arguments_, {
+  const result = spawnSync(process.execPath, [fallowBinary, ...arguments_], {
     cwd: process.cwd(),
     encoding: "utf8",
   });
@@ -79,8 +81,8 @@ const runFallowJson = (label, arguments_) => {
 
   // fallow-ignore-next-line security-sink -- The executable is resolved from the pinned Fallow package and spawnSync does not invoke a shell.
   const result = spawnSync(
-    fallowBinary,
-    [...arguments_, "--format", "json", "--quiet", "--no-cache"],
+    process.execPath,
+    [fallowBinary, ...arguments_, "--format", "json", "--quiet", "--no-cache"],
     {
       cwd: process.cwd(),
       encoding: "utf8",
@@ -130,10 +132,14 @@ const isValidScore = (value) => {
 
 const verifyStrictConfig = () => {
   // fallow-ignore-next-line security-sink -- The executable is resolved from the pinned Fallow package and spawnSync does not invoke a shell.
-  const result = spawnSync(fallowBinary, ["config", "--format", "json", "--quiet"], {
-    cwd: process.cwd(),
-    encoding: "utf8",
-  });
+  const result = spawnSync(
+    process.execPath,
+    [fallowBinary, "config", "--format", "json", "--quiet"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
 
   if (result.error) {
     throw result.error;
@@ -219,6 +225,12 @@ const fix = (arguments_) => {
     return;
   }
 
+  const validation = resolveValidationCommand(
+    validationCommand,
+    process.platform,
+    process.env.PATH ?? "",
+  );
+
   const fixStatus = runFallow("safe dead-code fixes", [
     "fix",
     "--yes",
@@ -236,7 +248,7 @@ const fix = (arguments_) => {
   process.stdout.write("\n[hygiene] project validation\n");
 
   // fallow-ignore-next-line security-sink -- The caller deliberately supplies executable argv after `--`; spawnSync does not invoke a shell.
-  const validationResult = spawnSync(validationCommand[0], validationCommand.slice(1), {
+  const validationResult = spawnSync(validation.file, validation.arguments, {
     cwd: process.cwd(),
     stdio: "inherit",
   });

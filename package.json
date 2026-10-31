@@ -8,6 +8,7 @@
   "files": [
     "README.md",
     "bin/hygieneFallow.mjs",
+    "bin/validationCommand.mjs",
     "fallow.config.json",
     "fallow.react-architecture.config.json",
     "hygienePlugin.d.ts",
@@ -50,7 +51,7 @@
   "scripts": {
     "changeset": "changeset",
     "format:check": "oxfmt --config oxfmt.json --check .",
-    "lint": "oxlint --config oxlint.config.mjs --tsconfig tsconfig.json --deny-warnings --report-unused-disable-directives oxlint.config.mjs hygienePlugin.mjs bin/hygieneFallow.mjs test/config.test.mjs test/fallow.test.mjs test/package.test.mjs test/capabilityArchitecture.config.mjs test/noDirectEffects.config.mjs",
+    "lint": "oxlint --config oxlint.config.mjs --tsconfig tsconfig.json --deny-warnings --report-unused-disable-directives oxlint.config.mjs hygienePlugin.mjs bin/hygieneFallow.mjs bin/validationCommand.mjs test/config.test.mjs test/fallow.test.mjs test/package.test.mjs test/capabilityArchitecture.config.mjs test/noDirectEffects.config.mjs",
     "lint:structure": "node ./bin/hygieneFallow.mjs check",
     "lint:package": "publint && attw --pack . --profile esm-only",
     "release": "changeset publish",
