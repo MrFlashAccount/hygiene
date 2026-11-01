@@ -1,4 +1,4 @@
-# hygiene
+# Hygiene
 
 Shared frontend hygiene defaults for React + Vite projects.
 
