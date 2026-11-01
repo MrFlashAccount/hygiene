@@ -22,7 +22,7 @@ test("the shared Fallow profile has no warning severities", async () => {
   const config = JSON.parse(contents);
   const architectureConfig = JSON.parse(architectureContents);
 
-  assert.equal(config.minimumVersion, "3.27.0");
+  assert.equal(config.minimumVersion, "3.38.1");
   assert.equal(config.typeAware.require, "complete");
   assert.equal(config.duplicates.mode, "semantic");
   assert.equal(config.boundaries.coverage.requireAllFiles, true);

@@ -1,5 +1,5 @@
 {
-  "minimumVersion": "3.27.0",
+  "minimumVersion": "3.38.1",
   "extends": ["./fallow.config.json"],
   "boundaries": {
     "zones": [

@@ -494,6 +494,8 @@ const baseConfig = {
     "unicorn/escape-case": "error",
     "unicorn/filename-case": [
       "error",
+      // WHY: Semantic clone detection normalizes distinct rule names and severity values, so independent declarative rule tables look identical even though they share no behavior.
+      // fallow-ignore-next-line code-duplication -- Declarative rule names differ and only their required severity literals repeat.
       {
         cases: {
           camelCase: true,

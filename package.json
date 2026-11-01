@@ -71,8 +71,8 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
     "@changesets/cli": "2.31.0",
-    "fallow": "3.27.0",
-    "oxfmt": "0.64.0",
+    "fallow": "3.38.1",
+    "oxfmt": "0.75.0",
     "oxlint": "1.79.0",
     "oxlint-tsgolint": "7.0.2001",
     "publint": "0.3.24",
@@ -80,7 +80,7 @@
   },
   "peerDependencies": {
     "@types/node": ">=22.0.0",
-    "fallow": "3.27.0",
+    "fallow": "3.38.1",
     "oxlint": ">=1.79.0",
     "oxlint-tsgolint": ">=7.0.2001",
     "typescript": ">=5.8.0"
