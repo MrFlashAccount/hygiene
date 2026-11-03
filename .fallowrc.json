@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "extends": ["./fallow.config.json"],
+  "entry": ["bin/*.mjs", "test/*.test.mjs", "test/*.config.mjs", "test/types.test.ts"],
+  "ignorePatterns": ["test/fixtures/**"],
+  "ignoreDependencies": [
+    "@nkzw/eslint-plugin",
+    "eslint-plugin-perfectionist",
+    "eslint-plugin-react-hooks",
+    "eslint-plugin-unused-imports",
+    "oxlint-plugin-react-doctor"
+  ],
+  "typeAware": {
+    "projects": ["test/tsconfig.json"]
+  },
+  "rules": {
+    "private-type-leaks": "off",
+    "policy-violation": "off"
+  },
+  "boundaries": {
+    "zones": [
+      {
+        "name": "package",
+        "patterns": ["*.mjs", "*.d.ts", "bin/**", "test/**"]
+      }
+    ],
+    "rules": [
+      {
+        "from": "package",
+        "allow": []
+      }
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": []
+    },
+    "calls": {
+      "forbidden": []
+    }
+  }
+}

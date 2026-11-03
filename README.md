@@ -2,12 +2,12 @@
 
 Shared frontend hygiene defaults for React + Vite projects.
 
-`@sergeigarin/hygene` gives you one reusable, deliberately strict baseline for TypeScript, oxlint, and oxfmt, so you can stop rebuilding the same config stack every time you start a new app.
+`@sergeigarin/hygene` gives you one reusable, deliberately strict baseline for TypeScript, Oxlint, Fallow, and Oxfmt, so you can stop rebuilding the same quality stack every time you start a new app.
 
 It is intentionally narrow:
 
 - built for React + Vite codebases
-- centered on TypeScript, oxlint, and oxfmt
+- centered on TypeScript, Oxlint, Fallow, and Oxfmt
 - shared where consistency helps
 - local where project reality still matters
 
@@ -31,7 +31,10 @@ That local-vs-shared split is the point: the package gives you the baseline, whi
 
 - `@sergeigarin/hygene` → shared `oxlint` config
 - `@sergeigarin/hygene/tsconfig.json` → shared TypeScript baseline
-- `@sergeigarin/hygene/oxfmt.json` → intentionally minimal oxfmt baseline
+- `@sergeigarin/hygene/fallow.config.json` → strict codebase-health baseline with complete source coverage
+- `@sergeigarin/hygene/fallow.react-architecture.config.json` → layered React capability architecture
+- `hygiene-fallow` → enforced Fallow checks and guarded dead-code fixes
+- `@sergeigarin/hygene/oxfmt.json` → intentionally minimal Oxfmt baseline
 
 The default lint config enables:
 
@@ -48,7 +51,7 @@ The default lint config enables:
 Install the package and the tools you actually run in the consumer app:
 
 ```sh
-npm install -D @sergeigarin/hygene oxlint oxlint-tsgolint typescript oxfmt
+npm install -D @sergeigarin/hygene fallow oxlint oxlint-tsgolint typescript oxfmt
 ```
 
 Type-aware linting uses `oxlint-tsgolint` and therefore the TypeScript 7 type system. The exported `tsconfig.json` itself requires TypeScript 5.8 or newer.
@@ -147,6 +150,61 @@ export default defineHygieneConfig({
 
 The point is not a particular directory name. The invariant is that UI declares intent while injected capabilities own I/O, storage, time, randomness, and synchronization.
 
+### Fallow
+
+Create `.fallowrc.json` in the consumer repository:
+
+```json
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "extends": ["npm:@sergeigarin/hygene/fallow.config.json"]
+}
+```
+
+The shared profile is deliberately blocking:
+
+- every enabled rule is `error`; uncertain heuristics are `off`, never `warn`
+- type-aware dead-code analysis must complete
+- semantic duplication is rejected
+- every reachable source file must belong to an architecture zone
+- cyclomatic, cognitive, CRAP, and function-size limits are enforced
+- the composite health score must be at least 85
+- Fallow security candidates fail the check until they are verified and fixed or narrowly dismissed with a reason
+
+The base profile assigns every `src/**` file to one mandatory source zone. That is the portable default: no source file can sit silently outside architecture coverage, but the package does not pretend that every repository has the same layers.
+
+For the full React capability architecture, extend the dedicated profile instead:
+
+```json
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "extends": ["npm:@sergeigarin/hygene/fallow.react-architecture.config.json"]
+}
+```
+
+It splits the application into `app`, `features`, `ui`, `application`, `ports`, `domain`, `infrastructure`, and `shared`. Ambient network, storage, clock, and randomness calls are forbidden from feature, UI, and domain code. Because an empty or misspelled zone is a failed check rather than a warning to accumulate, enable this profile only together with the matching directories or replace its `zones` and `rules` in the child config. Projects that need sibling-feature isolation can add Fallow's `autoDiscover` after the feature directory exists.
+
+Add the commands to the consumer:
+
+```json
+{
+  "scripts": {
+    "quality:fallow": "hygiene-fallow check",
+    "quality:fallow:fix": "hygiene-fallow fix -- npm run validate"
+  }
+}
+```
+
+`check` runs dead code and architecture, duplication, per-function health limits, the health-score gate, and security as separate hard gates. Override the score floor explicitly when a project has a stronger contract:
+
+```sh
+hygiene-fallow check --min-score 90
+```
+
+`HYGIENE_FALLOW_MIN_SCORE` provides the same override in CI. Child Fallow configs can override object fields normally; arrays such as zones and rules replace the inherited arrays, which makes architectural customization explicit.
+
+`fix` applies only Fallow's evidence-backed automatic fixes, such as removing unused exports, dependencies, and enum members. It refuses to run without a validation command and always invokes that command afterward. Unused whole files stay as hard failures for deliberate review instead of being deleted speculatively.
+
 ### Oxfmt
 
 ```sh
@@ -177,7 +235,7 @@ Keep these in the consumer repo:
 - app-specific lint overrides
 - test, e2e, and build-tool includes
 - anything tied to one runtime, folder layout, or framework slice
-- Knip entrypoints and project globs; dead-code analysis is only correct when it knows the real application graph
+- Fallow entrypoints, framework wiring, generated-code ignores, coverage path, and project-specific architecture zones
 
 ## Validation
 
@@ -192,7 +250,7 @@ This runs the complete package contract:
 - compiles the public TypeScript declarations
 - runs contract tests for assertion justification, effect boundaries, and capability boundaries
 - installs the packed tarball into a clean consumer and lints consumer TypeScript
-- detects unused files, exports, and dependencies with Knip
+- enforces type-aware dead code, architecture coverage, semantic duplication, health, and security with Fallow
 - validates package exports with Publint and TypeScript/ESM resolution with Are The Types Wrong
 
 ## Release flow
