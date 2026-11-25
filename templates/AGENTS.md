@@ -14,8 +14,9 @@
 
 ## Types
 
-- Every type assertion except `as const` requires an adjacent WHY comment explaining why it is necessary and why a safe typed alternative is unavailable.
+- Every type assertion except `as const` requires an adjacent, non-empty `WHY:` comment explaining why it is necessary and why a safe typed alternative is unavailable.
 - Assertions never replace runtime validation.
+- Name object parameter types instead of writing an object type literal in a function or method signature. React function components receive props intact; destructure inside the body if useful.
 - Represent related states with discriminated unions and handle closed unions exhaustively.
 - Do not use `never` or another assertion to hide an unresolved type mismatch.
 

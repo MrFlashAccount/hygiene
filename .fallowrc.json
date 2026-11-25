@@ -21,7 +21,7 @@
     "zones": [
       {
         "name": "package",
-        "patterns": ["*.mjs", "*.d.ts", "bin/**", "test/**"]
+        "patterns": ["*.mjs", "*.d.ts", "bin/**", "rules/**", "test/**"]
       }
     ],
     "rules": [

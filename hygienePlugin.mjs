@@ -1,3 +1,8 @@
+import { noDestructuredProps } from "./rules/noDestructuredProps.mjs";
+import { noInlineObjectParameterType } from "./rules/noInlineObjectParameterType.mjs";
+
+import { getPropertyName, getReactExportName } from "./rules/reactBinding.mjs";
+
 const ALLOWED_UNSAFE_DIRECTIVES = new Set([
   "eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion",
   "oxlint-disable-next-line typescript/no-unsafe-type-assertion",
@@ -40,10 +45,8 @@ const getStatementAnchor = (node) => {
   return anchor;
 };
 
-const isJustification = (comment) => {
-  const value = comment.value.trim();
-  return value !== "" && !value.startsWith("eslint-") && !value.startsWith("oxlint-");
-};
+const isJustification = (comment) =>
+  /^WHY:\s*\S/u.test(comment.value.replaceAll(/^\s*\* ?/gmu, "").trim());
 
 const hasDirectiveJustification = ({ anchor, comments, directiveComment, sourceCode }) => {
   const justificationComment = comments.at(PREVIOUS_COMMENT_INDEX);
@@ -116,97 +119,12 @@ const requireTypeAssertionJustification = {
     messages: {
       explicitAny: "Type assertions to any are forbidden.",
       missingJustification:
-        "Type assertion requires an adjacent comment explaining why it is necessary and cannot be avoided.",
+        "Type assertion requires an adjacent WHY: comment explaining why it is necessary and cannot be avoided.",
       nestedAssertion: "Nested type assertions are forbidden.",
     },
     schema: [],
     type: "problem",
   },
-};
-
-const getPropertyName = (memberExpression) => {
-  if (!memberExpression.computed && memberExpression.property.type === "Identifier") {
-    return memberExpression.property.name;
-  }
-
-  if (
-    memberExpression.computed &&
-    memberExpression.property.type === "Literal" &&
-    typeof memberExpression.property.value === "string"
-  ) {
-    return memberExpression.property.value;
-  }
-
-  return undefined;
-};
-
-const getImportedName = (specifier) => {
-  if (specifier.imported.type === "Identifier") {
-    return specifier.imported.name;
-  }
-
-  return typeof specifier.imported.value === "string" ? specifier.imported.value : undefined;
-};
-
-const findVariable = (sourceCode, identifier) => {
-  let scope = sourceCode.getScope(identifier);
-
-  while (scope) {
-    const variable = scope.set.get(identifier.name);
-    if (variable) {
-      return variable;
-    }
-
-    scope = scope.upper;
-  }
-
-  return undefined;
-};
-
-const findReactImportSpecifier = (sourceCode, identifier) => {
-  const variable = findVariable(sourceCode, identifier);
-  const importDefinition = variable?.defs.find(
-    (definition) =>
-      definition.type === "ImportBinding" &&
-      definition.parent?.type === "ImportDeclaration" &&
-      definition.parent.source.value === "react",
-  );
-
-  return importDefinition?.node;
-};
-
-const getDirectReactEffect = (sourceCode, identifier) => {
-  const specifier = findReactImportSpecifier(sourceCode, identifier);
-  if (specifier?.type !== "ImportSpecifier") {
-    return undefined;
-  }
-
-  const importedName = getImportedName(specifier);
-  return importedName && EFFECT_HOOKS.has(importedName) ? importedName : undefined;
-};
-
-const getQualifiedReactEffect = (sourceCode, memberExpression) => {
-  if (memberExpression.object.type !== "Identifier") {
-    return undefined;
-  }
-
-  const specifier = findReactImportSpecifier(sourceCode, memberExpression.object);
-  if (!specifier || specifier.type === "ImportSpecifier") {
-    return undefined;
-  }
-
-  const propertyName = getPropertyName(memberExpression);
-  return propertyName && EFFECT_HOOKS.has(propertyName) ? propertyName : undefined;
-};
-
-const getReactEffect = (sourceCode, callee) => {
-  if (callee.type === "Identifier") {
-    return getDirectReactEffect(sourceCode, callee);
-  }
-
-  return callee.type === "MemberExpression"
-    ? getQualifiedReactEffect(sourceCode, callee)
-    : undefined;
 };
 
 const noAmbientCapabilities = {
@@ -253,9 +171,9 @@ const noDirectEffects = {
   create(context) {
     return {
       CallExpression(node) {
-        const hook = getReactEffect(context.sourceCode, node.callee);
+        const hook = getReactExportName(context.sourceCode, node.callee);
 
-        if (hook) {
+        if (EFFECT_HOOKS.has(hook)) {
           context.report({ data: { hook }, messageId: "directEffect", node });
         }
       },
@@ -277,7 +195,9 @@ export default {
   },
   rules: {
     "no-ambient-capabilities": noAmbientCapabilities,
+    "no-destructured-props": noDestructuredProps,
     "no-direct-effects": noDirectEffects,
+    "no-inline-object-parameter-type": noInlineObjectParameterType,
     "require-type-assertion-justification": requireTypeAssertionJustification,
   },
 };

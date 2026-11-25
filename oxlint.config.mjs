@@ -113,6 +113,7 @@ const baseConfig = {
       rules: {
         "constructor-super": "off",
         "getter-return": "off",
+        "hygiene/no-inline-object-parameter-type": "error",
         "no-class-assign": "off",
         "no-const-assign": "off",
         "no-dupe-class-members": "off",
@@ -343,6 +344,7 @@ const baseConfig = {
     "for-direction": "error",
     "getter-return": "error",
     "guard-for-in": "error",
+    "hygiene/no-destructured-props": "error",
     "hygiene/require-type-assertion-justification": "error",
     "import/export": "error",
     "import/no-absolute-path": "error",
@@ -437,6 +439,7 @@ const baseConfig = {
     "no-var": "error",
     "no-warning-comments": ["error", { terms: ["@nocommit"] }],
     "no-with": "error",
+    "oxc/no-accumulating-spread": "error",
     "oxc/no-barrel-file": "error",
     "perfectionist/sort-enums": ["error", { partitionByComment: true, sortByValue: "always" }],
     "perfectionist/sort-heritage-clauses": "error",
