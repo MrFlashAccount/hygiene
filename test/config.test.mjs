@@ -56,19 +56,7 @@ for (const tsconfig of TSCONFIGS) {
   });
 }
 
-test("as const does not require a justification", () => {
-  const result = runOxlint(
-    "--config",
-    "oxlint.config.mjs",
-    "--tsconfig",
-    "tsconfig.json",
-    "test/fixtures/validAssertion.ts",
-  );
-
-  assert.equal(result.status, 0, outputOf(result));
-});
-
-test("ordinary type assertions require a local justification", () => {
+const baselineDiagnostics = (fixture) => {
   const result = runOxlint(
     "--config",
     "oxlint.config.mjs",
@@ -76,12 +64,46 @@ test("ordinary type assertions require a local justification", () => {
     "tsconfig.json",
     "--format",
     "json",
-    "test/fixtures/invalidAssertion.ts",
+    `test/fixtures/${fixture}`,
   );
+  assert.ok(result.status === 0 || result.status === 1, outputOf(result));
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.number_of_files, 1, outputOf(result));
+  return report.diagnostics;
+};
 
-  assert.notEqual(result.status, 0, outputOf(result));
-  assert.match(outputOf(result), /hygiene\(require-type-assertion-justification\)/u);
-});
+for (const fixture of ["validAssertion.ts", "validParameters.ts", "validSpread.ts"]) {
+  test(`${fixture}: accepted contracts pass the complete baseline`, () => {
+    assert.deepEqual(baselineDiagnostics(fixture), []);
+  });
+}
+
+const ASSERTION_RULE = "hygiene(require-type-assertion-justification)";
+const PARAMETER_RULE = "hygiene(no-inline-object-parameter-type)";
+const SPREAD_RULE = "oxc(no-accumulating-spread)";
+const PROPS_RULE = "hygiene(no-destructured-props)";
+
+// Each count corresponds to the independent violation examples in the named fixture.
+const INVALID_JUSTIFICATIONS = 5;
+const INLINE_PARAMETER_SHAPES = 7;
+const REPEATED_SPREADS = 2;
+const DESTRUCTURED_COMPONENTS = 9;
+const BASELINE_CASES = [
+  ["invalidProps.tsx", PROPS_RULE, DESTRUCTURED_COMPONENTS],
+  ["validProps.tsx", PROPS_RULE, 0],
+  ["invalidAssertion.ts", ASSERTION_RULE, INVALID_JUSTIFICATIONS],
+  ["invalidParameters.ts", PARAMETER_RULE, INLINE_PARAMETER_SHAPES],
+  ["accumulatingSpread.ts", SPREAD_RULE, REPEATED_SPREADS],
+];
+
+for (const [fixture, rule, violations] of BASELINE_CASES) {
+  test(`${fixture}: the baseline reports each ${rule} violation`, () => {
+    const diagnostics = baselineDiagnostics(fixture);
+    const matches = diagnostics.filter(({ code }) => code === rule);
+    assert.equal(matches.length, violations, JSON.stringify(diagnostics));
+    assert.ok(matches.every(({ severity }) => severity === "error"));
+  });
+}
 
 test("the opt-in preset rejects direct React effect hooks but ignores shadowed names", () => {
   const result = runOxlint(

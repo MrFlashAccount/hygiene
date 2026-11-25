@@ -43,8 +43,26 @@ The default lint config enables:
 - React Doctor's recommended rules plus the official React Hooks compiler rules
 - additional modern React restrictions such as no `cloneElement`, class `setState`, `React.Children`, or `dangerouslySetInnerHTML`
 - strict Vitest rules for test files
-- a local rule that requires every TypeScript assertion except `as const` to have an adjacent justification
+- `oxc/no-accumulating-spread` to reject repeatedly spreading a growing accumulator in reducers and loops
+- `hygiene/require-type-assertion-justification`: every TypeScript assertion except `as const` needs an adjacent, non-empty `WHY:` comment; if a targeted unsafe-assertion directive is necessary, put the explanation immediately above it
+- `hygiene/no-inline-object-parameter-type`: name object shapes used in function and method parameters, including inside `Readonly<…>`, unions, and arrays. The check also applies to callback and interface signatures; object returns, named type definitions, and object values at call sites remain valid
+- `hygiene/no-destructured-props`: receive React props intact and destructure in the component body, not in its parameter list. Ordinary functions can still destructure named parameter types
 - browser-only globals by default, so Node globals cannot leak into application source accidentally
+
+For example, both `function Card(props: { title: string })` and `function Card({ title }: CardProps)` are rejected when `Card` renders JSX. Use a named contract and keep the parameter intact:
+
+```tsx
+interface CardProps {
+  readonly title: string;
+}
+
+function Card(props: CardProps) {
+  const { title } = props;
+  return <h2>{title}</h2>;
+}
+```
+
+The props rule recognizes conventional components that return JSX or React `createElement`, explicit React `FC`/`FunctionComponent` annotations, and local JSX or React API uses such as `memo` and `forwardRef`. It does not infer that a function is a component from its name alone or trace custom wrappers across files.
 
 ## Quick start
 
